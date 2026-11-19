@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Silk Road — Home First, Then We'll See</title>
+<style>
+  :root { color-scheme: dark; --cream:#fff1d7; --gold:#f3bd77; }
+  * { box-sizing:border-box; }
+  html,body { margin:0;width:100%;height:100%;overflow:hidden;background:#e99b7c;font-family:Georgia,"Times New Roman",serif;color:var(--cream); }
+  #scene { position:fixed;inset:0; }
+  canvas { display:block; }
+  .title { position:fixed;top:clamp(20px,4vh,42px);left:50%;transform:translateX(-50%);text-align:center;z-index:3;width:min(94vw,920px);pointer-events:none;text-shadow:0 2px 18px #55332288; }
+  h1 { margin:0;font-size:clamp(23px,3.4vw,42px);font-weight:400;letter-spacing:.055em; }
+  .subtitle { margin-top:8px;font:11px/1.4 system-ui,sans-serif;letter-spacing:.27em;text-transform:uppercase;color:#fff0d3; }
+  .title:after { content:"";display:block;width:80px;height:1px;background:linear-gradient(90deg,transparent,#ffe6bd,transparent);margin:15px auto 0; }
+  #toggle { position:fixed;top:24px;right:24px;z-index:5;border:1px solid #fff1d777;background:#3c2d2788;color:#fff2df;padding:10px 15px;border-radius:30px;font:11px system-ui,sans-serif;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(9px);transition:.2s; }
+  #toggle:hover { background:#6d4733cc;transform:translateY(-1px); }
+  #sound { position:fixed;top:67px;right:24px;z-index:5;border:1px solid #fff1d766;background:#3c2d2777;color:#fff2df;padding:8px 12px;border-radius:24px;font:10px system-ui,sans-serif;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(9px);transition:.2s; }
+  #sound:hover,#sound.on { background:#6d4733cc; }
+  .hint { position:fixed;left:24px;bottom:22px;font:10px system-ui,sans-serif;letter-spacing:.12em;color:#fff0d2cc;z-index:2;text-shadow:0 1px 8px #553322;pointer-events:none; }
+  .marker { position:fixed;z-index:4;transform:translate(-50%,-50%);border:1px solid #fff0cf99;background:#49352d9c;color:#fff4db;border-radius:999px;padding:7px 11px;font:10px system-ui,sans-serif;letter-spacing:.06em;white-space:nowrap;cursor:pointer;backdrop-filter:blur(7px);box-shadow:0 2px 14px #2b1b1744;transition:opacity .15s,transform .15s; }
+  .marker:before { content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#f4c782;margin-right:7px;vertical-align:1px;box-shadow:0 0 9px #ffd597; }
+  .marker:hover { transform:translate(-50%,-50%) scale(1.06);background:#654737dd; }
+  #panel { position:fixed;z-index:6;right:24px;bottom:24px;width:min(380px,calc(100vw - 40px));max-height:76vh;overflow:auto;padding:15px 17px 16px;border:1px solid #fff0cf55;border-radius:14px;background:linear-gradient(145deg,#382b27ed,#2c2523f2);backdrop-filter:blur(16px);box-shadow:0 14px 40px #2a1c1b55;opacity:0;transform:translateY(10px);pointer-events:none;transition:.22s; }
+  #panel.open { opacity:1;transform:translateY(0);pointer-events:auto; }
+  #panel [hidden] { display:none !important; }
+  .info-photo { display:block;width:100%;height:142px;object-fit:cover;border-radius:9px;border:1px solid #fff0cf40;margin-bottom:7px;background:#6c5141; }
+  .photo-meta { display:flex;justify-content:space-between;gap:10px;margin:0 2px 12px;font:9px/1.4 system-ui,sans-serif;color:#f4e2c6aa; }
+  .photo-meta a { color:#f3cc91;text-decoration:none; }
+  .photo-meta a:hover { text-decoration:underline; }
+  #panel h2 { margin:0 24px 9px 0;font-size:20px;font-weight:400;color:#f4d09a; }
+  #panel p { margin:0;color:#f8ead6d9;font:12px/1.7 system-ui,sans-serif; }
+  .story-top { display:flex;justify-content:space-between;align-items:center;margin:0 35px 10px 1px;font:9px system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#e7c58f; }
+  .story-quote { margin:12px 0;padding:9px 11px;border-left:2px solid #e4b875;color:#f4d7ac;font:italic 13px/1.55 Georgia,serif;background:#ffffff08; }
+  .story-action,.story-nav button { border:1px solid #f2d4a555;border-radius:20px;background:#fff0d914;color:#ffedcf;padding:8px 12px;font:10px system-ui,sans-serif;letter-spacing:.06em;cursor:pointer; }
+  .story-action { margin-top:12px;background:#b3774b55; }
+  .story-action:hover,.story-nav button:hover { background:#b3774b99; }
+  .story-action:disabled,.story-nav button:disabled { opacity:.4;cursor:default; }
+  .story-nav { display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:13px;padding-top:10px;border-top:1px solid #fff1d722; }
+  #story-reply { margin-top:9px;color:#f5cf94;font:11px/1.55 system-ui,sans-serif; }
+  .weave { display:flex;gap:7px;margin-top:9px; }
+  .weave span { width:25px;height:8px;border-radius:5px;background:#fff0d022;border:1px solid #f3d19a44;transition:.3s; }
+  .weave span.done { background:#d99465;box-shadow:0 0 10px #e8a26c66; }
+  #close { position:absolute;right:13px;top:11px;width:26px;height:26px;border:0;border-radius:50%;background:#ffffff15;color:#fff1d7;font-size:17px;cursor:pointer; }
+  .photo-strip { position:fixed;left:24px;bottom:24px;z-index:4;width:min(410px,calc(100vw - 48px));padding:10px 11px 9px;border:1px solid #fff0cf55;border-radius:13px;background:#342925bf;backdrop-filter:blur(12px);box-shadow:0 8px 28px #2a1c1b44; }
+  .photo-heading { margin:0 0 8px 2px;font:9px system-ui,sans-serif;letter-spacing:.19em;color:#f4d09a; }
+  .photo-row { display:flex;gap:9px; }
+  .photo-card { flex:1;min-width:0; }
+  .photo-tile { display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer; }
+  .photo-tile img { display:block;width:100%;height:58px;object-fit:cover;border:1px solid #fff0cf66;border-radius:7px;transition:filter .2s,transform .2s; }
+  .photo-tile:hover img { filter:brightness(1.14);transform:translateY(-2px); }
+  .photo-name { display:block;margin:5px 1px 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:9px system-ui,sans-serif;letter-spacing:.04em;color:#fff0d9; }
+  .photo-credit { display:block;margin:0 1px;color:#f5dfc0a8;font:8px/1.3 system-ui,sans-serif; }
+  .photo-credit a { color:#f3cc91;text-decoration:none; }
+  .photo-credit a:hover { text-decoration:underline; }
+  .credit { position:fixed;right:24px;bottom:8px;z-index:2;font:9px system-ui,sans-serif;color:#fff0d277;pointer-events:none; }
+  @media(max-width:600px){#toggle{top:15px;right:14px;padding:8px 11px}#sound{top:56px;right:14px;padding:7px 10px}.title{top:20px}.subtitle{font-size:9px}.hint{left:14px;bottom:15px;max-width:46vw;line-height:1.5}#panel{right:12px;bottom:140px;width:calc(100vw - 24px);max-height:55vh;padding:12px}.info-photo{height:100px}.photo-strip{left:12px;bottom:12px;width:calc(100vw - 24px);padding:8px}.photo-row{gap:7px}.photo-tile img{height:49px}.photo-name{font-size:8px}.photo-credit{font-size:7px}.credit{display:none}}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<header class="title"><h1>Silk Road — Home First, Then We'll See</h1><div class="subtitle">Rei's journey west, and the way back</div></header>
+<button id="toggle" aria-label="Switch lighting">☼ &nbsp; MIDDAY LIGHT</button>
+<button id="sound" aria-label="Toggle desert wind sound" title="Wind sound is generated in your browser">♫ &nbsp; WIND OFF</button>
+<div class="hint">DRAG TO ORBIT &nbsp;·&nbsp; SCROLL TO ZOOM &nbsp;·&nbsp; CLICK A MARKER TO EXPLORE</div>
+<div id="panel"><button id="close" aria-label="Close">×</button><div class="story-top"><span id="story-kicker"></span><span id="story-count"></span></div><img id="info-photo" class="info-photo" alt="Real photograph of Dunhuang" hidden><div class="photo-meta" id="photo-meta" hidden><a id="photo-source" target="_blank" rel="noopener">View original photo</a><a id="photo-license" target="_blank" rel="noopener">License</a></div><h2 id="panel-title"></h2><p id="panel-copy"></p><blockquote id="story-quote" class="story-quote"></blockquote><div id="weave" class="weave" hidden><span></span><span></span><span></span></div><p id="story-reply" hidden></p><button id="story-action" class="story-action"></button><div class="story-nav"><button id="story-prev">← PREVIOUS</button><span id="story-progress"></span><button id="story-next">CONTINUE →</button></div></div>
+<aside class="photo-strip" aria-label="Real photographs of Dunhuang">
+  <div class="photo-heading">REAL DUNHUANG · FIELD PHOTOGRAPHS</div>
+  <div class="photo-row">
+    <div class="photo-card"><button class="photo-tile" data-landmark="mogao" aria-label="Explore Mogao Caves photograph"><img src="assets/mogao-pavilion.jpg" alt="Nine-storey red pavilion at the Mogao Caves"><span class="photo-name">Mogao Caves</span></button><small class="photo-credit"><a href="https://commons.wikimedia.org/wiki/File:Dunhuang_Mogao_Ku_2013.12.31_12-30-18.jpg" target="_blank" rel="noopener">Zhangzhugang</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a></small></div>
+    <div class="photo-card"><button class="photo-tile" data-landmark="lake" aria-label="Explore Crescent Lake photograph"><img src="assets/crescent-lake.jpg" alt="Crescent Lake nestled among Dunhuang dunes"><span class="photo-name">Crescent Lake</span></button><small class="photo-credit"><a href="https://commons.wikimedia.org/wiki/File:Crescent_Moon_Lake_(23889572731).jpg" target="_blank" rel="noopener">Laika ac</a> · <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank" rel="noopener">CC BY-SA 2.0</a></small></div>
+    <div class="photo-card"><button class="photo-tile" data-landmark="dunes" aria-label="Explore Singing Sand Dunes photograph"><img src="assets/mingsha-dunes.jpg" alt="Mingsha Mountain dunes at Dunhuang"><span class="photo-name">Mingsha Dunes</span></button><small class="photo-credit"><a href="https://commons.wikimedia.org/wiki/File:Mingsha_Mountain_and_Crescent_Moon_Spring_(54532735143).jpg" target="_blank" rel="noopener">xiquinhosilva</a> · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a></small></div>
+  </div>
+</aside>
+<div class="credit">An interactive reading of Seby Chan's Silk Road story</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+const host=document.getElementById('scene');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color('#e9a18b');
+scene.fog=new THREE.FogExp2('#e5a07f',0.0105);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,180);
+camera.position.set(22,19,31);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
+host.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,3,0);controls.enableDamping=true;controls.dampingFactor=.055;controls.minDistance=16;controls.maxDistance=58;controls.maxPolarAngle=Math.PI*.49;
+
+const mat=(color,roughness=.9,extra={})=>new THREE.MeshStandardMaterial({color,roughness,...extra});
+const sandM=mat('#c78b51'), duneM=mat('#dca45f'), duneLight=mat('#edbb78'), rockM=mat('#a9603d'), rockLight=mat('#c47b50'), shadowM=mat('#442b29'), redM=mat('#8e3024'), redLight=mat('#b54a31'), woodM=mat('#633a2e'), goldM=mat('#d9a65f'), waterM=new THREE.MeshStandardMaterial({color:'#42b9b5',roughness:.23,metalness:.12,transparent:true,opacity:.92}), greenM=mat('#597742'), leafM=mat('#81915a');
+const hemi=new THREE.HemisphereLight('#ffdfc3','#704533',1.75);scene.add(hemi);
+const sun=new THREE.DirectionalLight('#ffd29a',3.2);sun.position.set(-17,25,14);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-35;sun.shadow.camera.right=35;sun.shadow.camera.top=35;sun.shadow.camera.bottom=-35;sun.shadow.bias=-.0002;scene.add(sun);
+const fill=new THREE.DirectionalLight('#df9b86',.8);fill.position.set(18,12,-15);scene.add(fill);
+
+// A painted sky dome gives a gentle peach-to-apricot sunset gradient.
+const skyGeo=new THREE.SphereGeometry(95,48,32);
+const skyMat=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color('#788da0')},mid:{value:new THREE.Color('#e9a18b')},low:{value:new THREE.Color('#f6c18d')}},vertexShader:`varying vec3 vWorld; void main(){vec4 w=modelMatrix*vec4(position,1.0);vWorld=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,fragmentShader:`varying vec3 vWorld;uniform vec3 top;uniform vec3 mid;uniform vec3 low;void main(){float h=normalize(vWorld).y;float a=smoothstep(-.08,.34,h);float b=smoothstep(.28,.82,h);vec3 c=mix(low,mid,a);c=mix(c,top,b);gl_FragColor=vec4(c,1.0);}`});
+const sky=new THREE.Mesh(skyGeo,skyMat);scene.add(sky);
+
+// Desert floor
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(140,140),sandM);ground.rotation.x=-Math.PI/2;ground.position.y=-.18;ground.receiveShadow=true;scene.add(ground);
+// Layered, swept dunes: vertex-displaced surfaces provide smooth sculpted ridges.
+function dune(name,x,z,sx,sz,height,phase=0,color=duneM){
+  const g=new THREE.PlaneGeometry(1,1,90,90);g.rotateX(-Math.PI/2);
+  const p=g.attributes.position;
+  for(let i=0;i<p.count;i++){
+    const X=p.getX(i)*sx, Z=p.getZ(i)*sz;
+    const ridge=Math.sin((X*.20+Z*.12)+phase)*.55+Math.sin(Z*.34-phase*.6)*.22;
+    const mound=Math.exp(-Math.pow((X+sx*.16)/ (sx*.43),2))*Math.exp(-Math.pow((Z-sz*.10)/(sz*.68),2));
+    const edge=Math.max(0,1-Math.abs(X)/(sx*.52));
+    p.setY(i,Math.max(-.2, height*(.28+ridge*.19)*mound*edge));
+  }
+  g.computeVertexNormals();const m=new THREE.Mesh(g,color);m.name=name;m.position.set(x,0,z);m.receiveShadow=true;m.castShadow=true;scene.add(m);return m;
+}
+dune('Near dune',-17,-1,20,34,6,.3,duneM);dune('Far ridge',4,-23,37,17,8,1.1,duneLight);dune('Right dune',20,3,23,29,7,2.4,duneM);dune('Back dune',-12,20,31,16,5,3.4,duneLight);
+
+// Mogao cliff mass, strata bands, and dark recessed cave mouths.
+const cliff=new THREE.Group();cliff.position.set(-2,0,-13);scene.add(cliff);
+const cliffBase=new THREE.Mesh(new THREE.BoxGeometry(24,12,5.6),rockM);cliffBase.position.set(0,6,-.7);cliffBase.castShadow=true;cliffBase.receiveShadow=true;cliff.add(cliffBase);
+// Irregular sandstone cap silhouette
+for(let i=0;i<11;i++){
+  const w=2.4+Math.random()*1.8,h=1.1+Math.random()*2.1;
+  const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,5.3),i%2?rockM:rockLight);
+  b.position.set(-11+i*2.2,12+h*.28,-.7);b.rotation.z=(Math.random()-.5)*.13;b.castShadow=true;b.receiveShadow=true;cliff.add(b);
+}
+for(let row=0;row<3;row++){
+  const n=row===0?8:7;
+  for(let i=0;i<n;i++){
+    const x=-10.2+i*(20.4/(n-1))+(row===1?.45:0), y=2.1+row*3.0+(i%2)*.18;
+    const r=(row===0?.62:row===1?.49:.39)*(i===3&&row===1?1.35:1);
+    const dark=new THREE.Mesh(new THREE.CircleGeometry(r,24),shadowM);dark.position.set(x,y,2.14);cliff.add(dark);
+    const arch=new THREE.Mesh(new THREE.TorusGeometry(r,.095,7,24,Math.PI),rockLight);arch.position.set(x,y,2.18);arch.rotation.z=Math.PI;cliff.add(arch);
+    const sill=new THREE.Mesh(new THREE.BoxGeometry(r*2,.13,.13),goldM);sill.position.set(x,y-r*.95,2.2);cliff.add(sill);
+  }
+}
+// Fine horizontal weathering lines
+for(let j=0;j<7;j++){const line=new THREE.Mesh(new THREE.BoxGeometry(23.5,.055,.045),j%2?rockLight:goldM);line.position.set(0,1.1+j*1.5,2.14);cliff.add(line);}
+
+// Nine-storey pavilion: red timber frame, stacked roofs and gold finial.
+const pag=new THREE.Group();pag.position.set(7.8,0,-9.95);scene.add(pag);
+function box(parent,w,h,d,material,x,y,z){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
+function roof(parent,w,d,y){
+  const shape=new THREE.Shape();shape.moveTo(-w/2,0);shape.quadraticCurveTo(0,-.4,w/2,0);shape.lineTo(w*.42,-.18);shape.quadraticCurveTo(0,-.58,-w*.42,-.18);shape.closePath();
+  const geo=new THREE.ExtrudeGeometry(shape,{depth:d,bevelEnabled:false});geo.rotateX(Math.PI/2);
+  const mesh=new THREE.Mesh(geo,redLight);mesh.position.set(0,y,d/2);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);
+  const ridge=box(parent,.12,.13,d*.82,goldM,0,y+.12,0);return mesh;
+}
+box(pag,3.8,1.5,2.7,redM,0,.8,0);box(pag,3.0,1.15,2.3,redLight,0,2.05,0);box(pag,2.35,1.05,1.9,redM,0,3.23,0);box(pag,1.85,1.05,1.55,redLight,0,4.32,0);
+roof(pag,5.0,3.4,1.7);roof(pag,4.1,3.0,2.85);roof(pag,3.35,2.6,3.95);roof(pag,2.75,2.2,5.05);
+// ornamental vertical corner posts
+for(let lev=0;lev<4;lev++){const w=3.35-lev*.44,y=.15+lev*1.08;for(const x of [-w/2,w/2])for(const z of [-1,1])box(pag,.12,1.02,.12,goldM,x,y+.48,z);}
+const fin=new THREE.Mesh(new THREE.ConeGeometry(.16,.9,8),goldM);fin.position.set(0,6.08,0);pag.add(fin);const finial=new THREE.Mesh(new THREE.SphereGeometry(.15,12,10),goldM);finial.position.set(0,6.52,0);pag.add(finial);
+for(let lev=0;lev<4;lev++){const y=.58+lev*1.08,w=2.9-lev*.42;for(let i=0;i<3;i++){const win=box(pag,.34,.52,.06,shadowM,-.55+i*.55,y,1.37-lev*.13);}}
+
+// Crescent Lake: crescent-shaped turquoise basin, shoreline and small ripple glints.
+const lakeShape=new THREE.Shape();lakeShape.absarc(0,0,2.8,Math.PI*.12,Math.PI*1.88,false);lakeShape.absarc(.95,0,2.13,Math.PI*1.82,Math.PI*.18,true);lakeShape.closePath();
+const lakeGeo=new THREE.ShapeGeometry(lakeShape,48);const lake=new THREE.Mesh(lakeGeo,waterM);lake.rotation.x=-Math.PI/2;lake.position.set(7,.035,6);lake.receiveShadow=true;scene.add(lake);
+const bank=new THREE.Mesh(new THREE.TorusGeometry(2.8,.12,6,80,Math.PI*1.76),mat('#e9c17e'));bank.rotation.x=Math.PI/2;bank.position.set(7,.015,6);scene.add(bank);
+for(let i=0;i<5;i++){const ripple=new THREE.Mesh(new THREE.TorusGeometry(.32+i*.22,.018,4,28,Math.PI*1.15),new THREE.MeshBasicMaterial({color:'#b7eee0',transparent:true,opacity:.42}));ripple.rotation.x=Math.PI/2;ripple.position.set(7.1,.055,5.7+i*.09);scene.add(ripple);}
+// Date palms and desert shrubs around the oasis
+function palm(x,z,h=3.5){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.12,.22,h,8),woodM);trunk.position.y=h/2;trunk.castShadow=true;g.add(trunk);for(let i=0;i<8;i++){const a=i*Math.PI/4;const leaf=new THREE.Mesh(new THREE.ConeGeometry(.19,h*.35,5),i%2?greenM:leafM);leaf.position.set(Math.cos(a)*.83,h+.05+Math.sin(a)*.18,Math.sin(a)*.83);leaf.rotation.z=-Math.cos(a)*.95;leaf.rotation.x=Math.sin(a)*.65;leaf.scale.set(.65,1.5,.7);leaf.castShadow=true;g.add(leaf);}return g;}
+palm(4.1,4.2,3.0);palm(10.1,4.0,3.7);palm(10.8,8.1,2.8);palm(3.5,8.4,2.7);
+for(let i=0;i<12;i++){const a=i/12*Math.PI*2;const shrub=new THREE.Mesh(new THREE.SphereGeometry(.34+Math.random()*.18,9,7),i%2?greenM:leafM);shrub.scale.y=.6;shrub.position.set(7+Math.cos(a)*3.4,.25,6+Math.sin(a)*2.7);shrub.castShadow=true;scene.add(shrub);}
+
+// Winding Silk Road as a warm, gently raised ribbon.
+const pathPoints=[new THREE.Vector3(-24,.04,15),new THREE.Vector3(-18,.06,11),new THREE.Vector3(-12,.08,12),new THREE.Vector3(-7,.08,8),new THREE.Vector3(-3,.08,9),new THREE.Vector3(2,.08,5),new THREE.Vector3(8,.08,2),new THREE.Vector3(13,.08,-1),new THREE.Vector3(19,.08,-7),new THREE.Vector3(24,.06,-13),new THREE.Vector3(19,.04,-21),new THREE.Vector3(1,.04,-25),new THREE.Vector3(-19,.04,-22),new THREE.Vector3(-27,.04,-10),new THREE.Vector3(-28,.04,3)];
+const roadCurve=new THREE.CatmullRomCurve3(pathPoints,true,'catmullrom',.45);const roadGeo=new THREE.TubeGeometry(roadCurve,260,.74,8,true);const road=new THREE.Mesh(roadGeo,mat('#b67b4d'));road.position.y=-.03;road.receiveShadow=true;scene.add(road);
+// Slightly brighter path center
+const centerLine=new THREE.Mesh(new THREE.TubeGeometry(roadCurve,260,.045,5,true),mat('#dfaa6c'));centerLine.position.y=.67;scene.add(centerLine);
+
+// Five camels with riders and richly colored loads.
+function ellipsoid(parent,material,x,y,z,sx,sy,sz){const o=new THREE.Mesh(new THREE.SphereGeometry(1,14,10),material);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
+const camelCoat=mat('#9c6642'), camelLight=mat('#bc8250'), clothM=mat('#9d4540'), tealM=mat('#3f7772'), creamM=mat('#ddbd89');
+function camel(t,index){
+  const pos=roadCurve.getPointAt(t), tangent=roadCurve.getTangentAt(t);const g=new THREE.Group();g.position.set(pos.x,.6,pos.z);g.rotation.y=Math.atan2(-tangent.x,-tangent.z);g.userData.legs=[];g.userData.offset=t;g.userData.index=index;scene.add(g);
+  // body, twin humps, curved neck and head
+  ellipsoid(g,camelCoat,0,1.05,0,.82,.54,1.12);ellipsoid(g,camelLight,-.25,1.52,.12,.38,.47,.42);ellipsoid(g,camelLight,.25,1.52,.12,.38,.47,.42);
+  const neck=ellipsoid(g,camelCoat,0,1.73,-.78,.28,.72,.31);neck.rotation.x=-.28;
+  ellipsoid(g,camelLight,0,2.26,-.97,.34,.27,.35);ellipsoid(g,shadowM,.14,2.25,-1.22,.055,.04,.045);
+  // legs in contrasting strides
+  for(let j=0;j<4;j++){const x=j<2?-.48:.48,z=j%2?-.72:.62;const pivot=new THREE.Group();pivot.position.set(x,.82,z);const leg=new THREE.Mesh(new THREE.CylinderGeometry(.105,.13,.76,8),camelCoat);leg.position.y=-.37;leg.castShadow=true;pivot.add(leg);ellipsoid(pivot,camelLight,0,-.74,-.03,.15,.08,.25);g.add(pivot);g.userData.legs.push(pivot);}
+  // saddle blankets and bundles
+  const saddle=box(g,1.18,.16,1.05,clothM,0,1.77,.16);saddle.rotation.x=-.06;
+  box(g,.76,.48,.7,index%2?tealM:goldM,0,2.05,.12);box(g,.6,.38,.55,creamM,.22,2.36,.14);
+  // rider: robe, head and wrapped turban
+  ellipsoid(g,index%2?tealM:clothM,0,2.48,.18,.31,.5,.29);ellipsoid(g,mat('#8c5740'),0,3.02,.08,.18,.2,.18);ellipsoid(g,creamM,0,3.13,.08,.2,.11,.2);
+  // reins
+  const rein=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(0,2.35,-.1),new THREE.Vector3(0,2.14,-.6),new THREE.Vector3(0,2.28,-1.1)]),12,.018,4,false),goldM);g.add(rein);
+  return g;
+}
+const caravan=[];for(let i=0;i<5;i++)caravan.push(camel(.17+i*.047,i));
+
+// Tiny bird silhouettes, gliding against the sky.
+const birds=new THREE.Group();scene.add(birds);
+for(let i=0;i<5;i++){const b=new THREE.Group();const wingmat=new THREE.MeshBasicMaterial({color:'#65413c',transparent:true,opacity:.8});const l=new THREE.Mesh(new THREE.BoxGeometry(.58,.035,.06),wingmat),r=l.clone();l.position.x=-.25;r.position.x=.25;l.rotation.z=.3;r.rotation.z=-.3;b.add(l,r);b.position.set(-9+i*1.2,12+(i%3)*.75,-4-i*.9);b.scale.setScalar(.55+(i%2)*.16);birds.add(b);}
+
+// Story landmarks west of Dunhuang: compact 3D diorama models for the chapter stops.
+const mervGroup=new THREE.Group();mervGroup.position.set(-16,0,3);scene.add(mervGroup);
+const mervWall=mat('#a96e49'),mervLight=mat('#c18a5b'),mervDark=mat('#684238'),glassGlow=new THREE.MeshStandardMaterial({color:'#ffd37b',emissive:'#d77631',emissiveIntensity:1.5,roughness:.25});
+box(mervGroup,9,.65,6,mervWall,0,.32,0);box(mervGroup,8.5,3.2,.55,mervWall,0,2,-2.7);box(mervGroup,.55,3.1,5.5,mervWall,-4,1.95,0);box(mervGroup,.55,3.1,5.5,mervWall,4,1.95,0);
+box(mervGroup,2.1,2.2,.24,mervDark,0,1.35,-2.38);box(mervGroup,2.8,.42,.5,mervLight,0,2.65,-2.5);
+for(const x of [-4,0,4]){box(mervGroup,1.15,4.2,1.15,mervLight,x,2.1,-2.65);for(let k=-1;k<=1;k++)box(mervGroup,.22,.42,.22,mervLight,x+k*.36,4.4,-2.65);}
+for(let i=0;i<3;i++){const stall=new THREE.Group();stall.position.set(-2.8+i*2.8,0,1.5);mervGroup.add(stall);box(stall,1.5,1.25,1.25,mervLight,0,.65,0);const canopy=new THREE.Mesh(new THREE.ConeGeometry(1.1,.75,4),i%2?redLight:goldM);canopy.position.y=1.65;canopy.rotation.y=Math.PI/4;canopy.castShadow=true;stall.add(canopy);}
+const glass=new THREE.Mesh(new THREE.SphereGeometry(.48,18,14),glassGlow);glass.position.set(1.2,1.6,2);glass.castShadow=true;mervGroup.add(glass);
+
+const passGroup=new THREE.Group();passGroup.position.set(-11,0,-8);scene.add(passGroup);
+const passRock=mat('#80644c'),passLight=mat('#aa8060');
+for(let i=0;i<7;i++){const side=i<4?-1:1,index=i<4?i:i-4;const rock=new THREE.Mesh(new THREE.ConeGeometry(2.2+index*.25,7+index*.8,6),index%2?passRock:passLight);rock.position.set(side*(6+index*.35),3.5+index*.25,-2+index*2.3);rock.rotation.z=side*.16;rock.castShadow=true;rock.receiveShadow=true;passGroup.add(rock);}
+const gatePost=mat('#c79662');box(passGroup,.65,4,.65,gatePost,0,2,-.7);box(passGroup,.65,4,.65,gatePost,2.8,2,-.7);box(passGroup,3.5,.55,.7,gatePost,1.4,4,-.7);box(passGroup,3.6,.12,.74,goldM,1.4,4.36,-.7);
+
+const ctesiphonGroup=new THREE.Group();ctesiphonGroup.position.set(10,0,-20);scene.add(ctesiphonGroup);
+const archShape=new THREE.Shape();archShape.moveTo(-4.8,0);archShape.lineTo(-4.8,6.5);archShape.quadraticCurveTo(-4.8,10.7,0,10.7);archShape.quadraticCurveTo(4.8,10.7,4.8,6.5);archShape.lineTo(4.8,0);archShape.closePath();
+const archHole=new THREE.Path();archHole.moveTo(3.15,0);archHole.lineTo(3.15,5.8);archHole.quadraticCurveTo(3.15,8.7,0,8.7);archHole.quadraticCurveTo(-3.15,8.7,-3.15,5.8);archHole.lineTo(-3.15,0);archHole.closePath();archShape.holes.push(archHole);
+const archMesh=new THREE.Mesh(new THREE.ExtrudeGeometry(archShape,{depth:1.7,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.12,bevelThickness:.12}),mat('#a74731'));archMesh.position.set(0,0,-.8);archMesh.castShadow=true;archMesh.receiveShadow=true;ctesiphonGroup.add(archMesh);
+for(let y=1;y<9;y+=1.35){const band=new THREE.Mesh(new THREE.BoxGeometry(9.4,.08,1.78),y%2?redLight:goldM);band.position.set(0,y,-.82);band.castShadow=true;ctesiphonGroup.add(band);}
+const ctesiphonBase=box(ctesiphonGroup,12,.42,3.5,mat('#8e503c'),0,.2,0);
+
+const antiochGroup=new THREE.Group();antiochGroup.position.set(20,0,-10);scene.add(antiochGroup);
+const seaMat=new THREE.MeshStandardMaterial({color:'#397f91',roughness:.28,metalness:.12,transparent:true,opacity:.88});const seaPlane=new THREE.Mesh(new THREE.PlaneGeometry(19,13),seaMat);seaPlane.rotation.x=-Math.PI/2;seaPlane.position.set(0,.08,1);seaPlane.receiveShadow=true;antiochGroup.add(seaPlane);
+const quay=mat('#8d6248');box(antiochGroup,12,.42,1.2,quay,-2,.24,-3.8);box(antiochGroup,.38,.65,5.2,quay,2.2,.32,-1.4);box(antiochGroup,.38,.65,5.2,quay,-6.2,.32,-1.4);
+for(let i=0;i<4;i++){const post=new THREE.Mesh(new THREE.CylinderGeometry(.12,.16,.9,8),woodM);post.position.set(-5+i*3,.45,-3.8);post.castShadow=true;antiochGroup.add(post);}
+const ship=new THREE.Group();ship.position.set(3,.1,1.2);antiochGroup.add(ship);const hull=box(ship,3,.42,.8,woodM,0,.42,0);hull.rotation.y=.12;const mast=new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,2.8,8),woodM);mast.position.y=2;ship.add(mast);const sail=new THREE.Mesh(new THREE.PlaneGeometry(1.6,1.85),mat('#e8d5ae',.8,{side:THREE.DoubleSide}));sail.position.set(.76,1.95,0);sail.rotation.y=.2;ship.add(sail);
+
+// Marker system: clickable story stops and Dunhuang photo landmarks.
+const photos={
+ mogao:{src:'assets/mogao-pavilion.jpg',source:'https://commons.wikimedia.org/wiki/File:Dunhuang_Mogao_Ku_2013.12.31_12-30-18.jpg',license:'https://creativecommons.org/licenses/by-sa/4.0/',credit:'Zhangzhugang · 2013 · cropped for display · CC BY-SA 4.0'},
+ lake:{src:'assets/crescent-lake.jpg',source:'https://commons.wikimedia.org/wiki/File:Crescent_Moon_Lake_(23889572731).jpg',license:'https://creativecommons.org/licenses/by-sa/2.0/',credit:'Laika ac · cropped for display · CC BY-SA 2.0'},
+ dunes:{src:'assets/mingsha-dunes.jpg',source:'https://commons.wikimedia.org/wiki/File:Mingsha_Mountain_and_Crescent_Moon_Spring_(54532735143).jpg',license:'https://creativecommons.org/licenses/by/2.0/',credit:'xiquinhosilva · cropped for display · CC BY 2.0'}
+};
+const stories=[
+ {id:'merv',kicker:'Chapter Two · 23 days west',title:'Merv',copy:'The Tarim Basin gives way to scrub, then something almost like grass. Rei and Xin arrive in Merv, where old mud-brick walls lead into busy streets, glassblowers’ workshops and a caravanserai with its own well.',quote:'“Merv arrived the way important things often did: without warning and without ceremony.”',action:'Watch the glassblower',response:'A breath turns molten glass into a bright bubble of light. Rei stays to watch; Xin waits in the caravanserai yard.',target:[-16,3,3],offset:[13,10,18]},
+ {id:'seal',kicker:'Chapter Three · The physician’s debt',title:'The Finder’s Seal',copy:'Darius tells Rei that the jade medallion is a finder’s seal. It grants no power; it draws circumstances and paths. Xin, apparently, has known this all along.',quote:'“The seal doesn’t grant power. It draws things. Circumstances. Paths.”',action:'Ask Xin what he knew',response:'Xin gives his low, almost-groan answer: “Yes, obviously. Keep up.”',target:[-15,3,3],offset:[12,9,16]},
+ {id:'persia',kicker:'Chapter Four · What passes through Persia',title:'The Persian Passes',copy:'A border official invents fees. Shirin answers with patience, documents and a carefully managed impression of victory. Rei reads the trade agreement and begins learning Persian.',quote:'“You don’t need to be eloquent. You need to be understood. Different skill.”',action:'Read the trade papers',response:'Rei works through the agreement by lamplight. The script changes shape with its context; so, she begins to understand, can a traveller.',target:[-11,4,-8],offset:[13,10,18]},
+ {id:'ctesiphon',kicker:'Chapter Five · The long way through the silk',title:'Ctesiphon',copy:'At the Tigris, the immense arch of Taq Kasra changes Rei’s idea of what people can build. By firelight, she begins a new silk panel: an arch, two small figures and a camel.',quote:'“No end marked. No beginning either.”',action:'Add a thread to the scarf',response:'Each thread carries the arch a little farther toward its other side.',target:[10,5,-19],offset:[12,10,-18]},
+ {id:'antioch',kicker:'Chapter Six · The road meets the sea',title:'Antioch',copy:'The caravan’s cargo reaches the western market. Rei sees the sea for the first time. She still wants to go home—and she also wants to know what is in Egypt.',quote:'“It doesn’t end,” Rei says, looking across the water.',action:'Look out to sea',response:'The horizon opens beyond the harbour. Home and the unknown can both be true.',target:[20,2,-10],offset:[14,11,19]},
+ {id:'return',kicker:'Chapter Seven · The way back',title:'A Different Road East',copy:'The return is not a replay. Familiar places look different because Rei has changed. She now manages two camels, including Lian, while Xin quietly lends the nervous mare his calm.',quote:'“You see different things when you’ve learned to look.”',action:'Turn the caravan east',response:'The sun is in a new place. The road home is familiar, but it is not the same road.',target:[0,3,5],offset:[20,15,27]},
+ {id:'dunhuang',kicker:'Dunhuang · Seven months later',title:'Home First',copy:'Dunhuang arrives from the east. Rei accepts the possibility of an eastern run, gives Xin a pomegranate and finishes the scarf: the arch closes, while the road runs out beyond both edges.',quote:'“Home first,” I told him. “Then we’ll see.”',action:'Finish the scarf',response:'No end marked. No beginning either. Just the middle—where Rei is, whether she is home or not.',photo:'lake',target:[0,3,0],offset:[22,19,31]}
+];
+const markerData=[
+ {id:'merv',label:'MERV',pos:new THREE.Vector3(-16,5.3,1),story:0},
+ {id:'seal',label:'THE FINDER’S SEAL',pos:new THREE.Vector3(-13,4,2),story:1},
+ {id:'persia',label:'PERSIAN PASSES',pos:new THREE.Vector3(-11,8,-8),story:2},
+ {id:'ctesiphon',label:'TAQ KASRA',pos:new THREE.Vector3(10,10,-19),story:3},
+ {id:'antioch',label:'ANTIOCH · THE SEA',pos:new THREE.Vector3(20,2,-10),story:4},
+ {id:'caravan',label:'THE WAY BACK',pos:new THREE.Vector3(-2,4,9),story:5},
+ {id:'mogao',label:'MOGAO CAVES',pos:new THREE.Vector3(-3,10.2,-9.6),story:6,photo:'mogao'},
+ {id:'lake',label:'CRESCENT LAKE',pos:new THREE.Vector3(7,1.2,6),story:6,photo:'lake'},
+ {id:'dunes',label:'SINGING SAND DUNES',pos:new THREE.Vector3(19,7,3),story:6,photo:'dunes'}
+];
+const markerEls=markerData.map(m=>{const e=document.createElement('button');e.className='marker';e.textContent=m.label;e.setAttribute('aria-label','Go to story stop '+m.label);document.body.appendChild(e);e.addEventListener('click',()=>showStory(m.story,m.photo));return e;});
+const panel=document.getElementById('panel'),targetGoal=new THREE.Vector3(),cameraGoal=new THREE.Vector3();let currentStory=0,weaveCount=0;
+function showStory(index,photoOverride=null){currentStory=(index+stories.length)%stories.length;const s=stories[currentStory],photo=photos[photoOverride||s.photo];document.getElementById('story-kicker').textContent=s.kicker;document.getElementById('story-count').textContent=String(currentStory+1).padStart(2,'0')+' / '+String(stories.length).padStart(2,'0');document.getElementById('panel-title').textContent=s.title;document.getElementById('panel-copy').textContent=s.copy;document.getElementById('story-quote').textContent=s.quote;const image=document.getElementById('info-photo'),meta=document.getElementById('photo-meta');image.hidden=!photo;meta.hidden=!photo;if(photo){image.src=photo.src;image.alt='Real photograph accompanying '+s.title;document.getElementById('photo-source').href=photo.source;document.getElementById('photo-source').textContent='Photo: '+photo.credit;document.getElementById('photo-license').href=photo.license;}else image.removeAttribute('src');const weave=document.getElementById('weave');weave.hidden=s.id!=='ctesiphon';if(s.id==='ctesiphon')weave.querySelectorAll('span').forEach((el,i)=>el.classList.toggle('done',i<weaveCount));const reply=document.getElementById('story-reply');reply.hidden=true;reply.textContent='';const action=document.getElementById('story-action');action.textContent=s.action;action.dataset.finished='false';document.getElementById('story-prev').disabled=currentStory===0;document.getElementById('story-next').textContent=currentStory===stories.length-1?'RESTART JOURNEY ↺':'CONTINUE →';document.getElementById('story-progress').textContent=s.kicker.split('·')[0].trim();const target=new THREE.Vector3(...s.target);targetGoal.copy(target);cameraGoal.copy(target).add(new THREE.Vector3(...s.offset));if(s.id!=='antioch')seaPlane.material.opacity=.88;panel.classList.add('open');}
+function interactStory(){const s=stories[currentStory],reply=document.getElementById('story-reply'),action=document.getElementById('story-action');if(s.id==='dunhuang'&&action.dataset.finished==='true'){showStory(0);return;}reply.hidden=false;if(s.id==='ctesiphon'){weaveCount=Math.min(3,weaveCount+1);document.querySelectorAll('#weave span').forEach((el,i)=>el.classList.toggle('done',i<weaveCount));reply.textContent=weaveCount===3?'The two sides meet. The arch is complete; the road still runs beyond the edge of the cloth.':'Thread '+weaveCount+' of 3: the new arch begins to take shape in silk.';if(weaveCount===3)archMesh.material.color.set('#c05b3d');}else if(s.id==='antioch'){reply.textContent=s.response;seaPlane.material.opacity=.98;}else if(s.id==='return'){showStory(6);return;}else{reply.textContent=s.response;if(s.id==='merv')glassGlow.emissiveIntensity=2.8;if(s.id==='dunhuang'){action.textContent='Journey again ↺';action.dataset.finished='true';}}}
+document.getElementById('story-action').addEventListener('click',interactStory);
+document.getElementById('story-prev').addEventListener('click',()=>showStory(currentStory-1));
+document.getElementById('story-next').addEventListener('click',()=>showStory(currentStory===stories.length-1?0:currentStory+1));
+document.querySelectorAll('.photo-tile').forEach(tile=>tile.addEventListener('click',()=>showStory(6,tile.dataset.landmark)));
+document.getElementById('close').addEventListener('click',()=>panel.classList.remove('open'));
+showStory(0);
+
+// Soft synthesized desert wind: only starts after the visitor presses the sound button.
+let audioCtx=null,windMaster=null,windOn=false;
+async function toggleWind(){
+  const button=document.getElementById('sound');
+  if(!audioCtx){
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    if(!AudioContextClass){button.textContent='♫  AUDIO UNAVAILABLE';return;}
+    audioCtx=new AudioContextClass();
+    const buffer=audioCtx.createBuffer(1,audioCtx.sampleRate*4,audioCtx.sampleRate),data=buffer.getChannelData(0);let last=0;
+    for(let i=0;i<data.length;i++){last=(last+.018*(Math.random()*2-1))/1.018;data[i]=last*3.3;}
+    const noise=audioCtx.createBufferSource();noise.buffer=buffer;noise.loop=true;
+    const low=audioCtx.createBiquadFilter();low.type='lowpass';low.frequency.value=520;low.Q.value=.55;
+    const high=audioCtx.createBiquadFilter();high.type='highpass';high.frequency.value=80;high.Q.value=.45;
+    windMaster=audioCtx.createGain();windMaster.gain.value=.0001;noise.connect(low);low.connect(high);high.connect(windMaster);windMaster.connect(audioCtx.destination);noise.start();
+    const gust=audioCtx.createOscillator(),gustDepth=audioCtx.createGain();gust.type='sine';gust.frequency.value=.075;gustDepth.gain.value=210;gust.connect(gustDepth);gustDepth.connect(low.frequency);gust.start();
+  }
+  if(audioCtx.state==='suspended')await audioCtx.resume();
+  windOn=!windOn;windMaster.gain.cancelScheduledValues(audioCtx.currentTime);windMaster.gain.setTargetAtTime(windOn?.16:.0001,audioCtx.currentTime,windOn?.8:.45);
+  button.textContent=windOn?'♫  WIND ON':'♫  WIND OFF';button.classList.toggle('on',windOn);button.setAttribute('aria-pressed',String(windOn));
+}
+document.getElementById('sound').addEventListener('click',toggleWind);
+
+// Sunset / midday lighting toggle
+let midday=false;const toggle=document.getElementById('toggle');
+toggle.addEventListener('click',()=>{midday=!midday;toggle.innerHTML=midday?'☼ &nbsp; SUNSET LIGHT':'☼ &nbsp; MIDDAY LIGHT';sun.color.set(midday?'#fff1d5':'#ffd29a');sun.intensity=midday?4.1:3.2;sun.position.set(midday?-10: -17,midday?35:25,midday?4:14);hemi.color.set(midday?'#e7f0ff':'#ffdfc3');hemi.groundColor.set(midday?'#8d7556':'#704533');hemi.intensity=midday?2.0:1.75;fill.color.set(midday?'#c6d8ff':'#df9b86');fill.intensity=midday?1.1:.8;renderer.toneMappingExposure=midday?1.18:1.12;scene.fog.color.set(midday?'#d8c2a6':'#e5a07f');skyMat.uniforms.top.value.set(midday?'#8db4cf':'#788da0');skyMat.uniforms.mid.value.set(midday?'#d6d7ce':'#e9a18b');skyMat.uniforms.low.value.set(midday?'#f5ddae':'#f6c18d');});
+
+function placeMarkers(){for(let i=0;i<markerData.length;i++){const m=markerData[i],p=m.pos.clone();p.project(camera);const x=(p.x*.5+.5)*innerWidth,y=(-p.y*.5+.5)*innerHeight;const visible=m.story===currentStory&&p.z<1&&x>12&&x<innerWidth-12&&y>85&&y<innerHeight-12;markerEls[i].style.left=x+'px';markerEls[i].style.top=y+'px';markerEls[i].style.opacity=visible?'1':'0';markerEls[i].style.pointerEvents=visible?'auto':'none';}}
+const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();camera.position.lerp(cameraGoal,.035);controls.target.lerp(targetGoal,.035);controls.update();birds.position.x=Math.sin(t*.13)*.65;birds.position.y=Math.sin(t*.7)*.12;
+  // A slow continuous loop keeps the whole caravan travelling along the winding road.
+  caravan.forEach((camelGroup,i)=>{const progress=(camelGroup.userData.offset+t*.0028)%1;const p=roadCurve.getPointAt(progress),dir=roadCurve.getTangentAt(progress);camelGroup.position.set(p.x,.6+Math.abs(Math.sin(t*3.1+i*.65))*.045,p.z);camelGroup.rotation.y=Math.atan2(-dir.x,-dir.z);camelGroup.rotation.z=Math.sin(t*1.55+i*.55)*.012;camelGroup.userData.legs.forEach((leg,j)=>{leg.rotation.x=Math.sin(t*4.7+i*.7+(j===0||j===3?0:Math.PI))*.31;});});
+  placeMarkers();renderer.render(scene,camera);}animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));});
+</script>
+</body>
+</html>
